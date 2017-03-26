@@ -1,10 +1,22 @@
-use 5.008001;
+package Dancer2::Plugin::Queue::IronMQ;
+
+## no critic (ControlStructures::ProhibitPostfixControls)
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
+
 use strict;
 use warnings;
+use 5.008001;
 
-package Dancer2::Plugin::Queue::IronMQ;
 # ABSTRACT: Dancer2::Plugin::Queue backend using IronMQ
-# VERSION
+# VERSION:
+
+=for stopwords UUID_V1 IronMQ JSON config
+
+=cut
+
+=for Pod::Coverage UUID_V1
+
+=cut
 
 # Dependencies
 use Moose;
@@ -12,6 +24,10 @@ use UUID::Tiny qw{ create_uuid_as_string UUID_V1 };
 require IO::Iron::IronMQ::Client;
 require IO::Iron::IronMQ::Queue;
 require IO::Iron::IronMQ::Message;
+
+use Const::Fast;
+
+const my $RANDOM_STRING_LENGTH => 12;
 
 with 'Dancer2::Plugin::Queue::Role::Queue';
 
@@ -24,9 +40,9 @@ These can also be written under I<connection_options>.
 =cut
 
 has config => (
-  is      => 'ro',
-  isa     => 'Str',
-  default => 'iron.json',
+    is      => 'ro',
+    isa     => 'Str',
+    default => 'iron.json',
 );
 
 =attr queue_name
@@ -36,9 +52,10 @@ Name of the queue. Defaults to 'dancer2-<12 chars UUID>'.
 =cut
 
 has queue_name => (
-  is      => 'ro',
-  isa     => 'Str',
-  default => 'dancer2-' . (substr create_uuid_as_string(UUID_V1), 1, 12),
+    is      => 'ro',
+    isa     => 'Str',
+    default => 'dancer2-'
+      . ( substr create_uuid_as_string(UUID_V1), 1, $RANDOM_STRING_LENGTH ),
 );
 
 =attr timeout
@@ -52,9 +69,9 @@ and maximum is 86,400 seconds (24 hours).
 =cut
 
 has timeout => (
-  is      => 'ro',
-  isa     => 'Str',
-  default => '60',
+    is      => 'ro',
+    isa     => 'Str',
+    default => '60',
 );
 
 =attr wait
@@ -64,21 +81,21 @@ Time to long poll for messages, in seconds. Max is 30 seconds. Default 0.
 =cut
 
 has wait => (
-  is      => 'ro',
-  isa     => 'Str',
-  default => '0',
+    is      => 'ro',
+    isa     => 'Str',
+    default => '0',
 );
 
-=attr delete
+=attr delete_after_reserving
 
 If true, do not put each message back on to the queue after reserving. Default false.
 
 =cut
 
-has delete => (
-  is      => 'ro'
-  isa     => 'Str',
-  default => 'false',
+has delete_after_reserving => (
+    is      => 'ro',
+    isa     => 'Str',
+    default => 'false',
 );
 
 =attr delete_queue
@@ -89,9 +106,9 @@ Not yet implemented.
 =cut
 
 has delete_queue => (
-  is      => 'ro',
-  isa     => 'Bool',
-  default => false,
+    is      => 'ro',
+    isa     => 'Str',
+    default => 'false',
 );
 
 =attr connection_options
@@ -107,9 +124,10 @@ Not implemented yet.
 =cut
 
 has connection_options => (
-  is      => 'ro',
-  isa     => 'HashRef',
-  # default => sub { {} },
+    is  => 'ro',
+    isa => 'HashRef',
+
+    # default => sub { {} },
 );
 
 =attr queue
@@ -120,50 +138,55 @@ other attributes.
 =cut
 
 has queue => (
-  is         => 'ro',
-  isa        => 'IO::Iron::IronMQ::Queue',
-  lazy_build => 1,
+    is         => 'ro',
+    isa        => 'IO::Iron::IronMQ::Queue',
+    lazy_build => 1,
 );
 
 sub _build_queue {
-  my ($self) = @_;
-  return $self->_ironmq_client->create_and_get_queue( 'name' => $self->queue_name );
+    my ($self) = @_;
+    return $self->_ironmq_client->create_and_get_queue(
+        'name' => $self->queue_name );
 }
 
 has _ironmq_client => (
-  is         => 'ro',
-  isa        => 'IO::Iron::IronMQ::Client',
-  lazy_build => 1,
+    is         => 'ro',
+    isa        => 'IO::Iron::IronMQ::Client',
+    lazy_build => 1,
 );
 
 sub _build__ironmq_client {
-  my ($self) = @_;
-  if( defined $self->connection_options ) {
-    return IO::Iron::IronMQ::Client->new( %{$self->connection_options} ) ;
-  } else {
-   return IO::Iron::IronMQ::Client->new( 'config' => $self->config );
-  }
+    my ($self) = @_;
+    if ( defined $self->connection_options ) {
+        return IO::Iron::IronMQ::Client->new( %{ $self->connection_options } );
+    }
+    else {
+        return IO::Iron::IronMQ::Client->new( 'config' => $self->config );
+    }
 }
 
 sub add_msg {
-  my ( $self, $data ) = @_;
-  my $msg = IO::Iron::IronMQ::Message->new( 'body' => $data );
-  $self->queue->push( 'messages' => [ $msg ] );
+    my ( $self, $data ) = @_;
+    my $msg = IO::Iron::IronMQ::Message->new( 'body' => $data );
+    $self->queue->push( 'messages' => [$msg] );
+    return;
 }
 
 sub get_msg {
-  my ($self) = @_;
-  my %options;
-  $options{'timeout'} = $self->timeout if $defined $self->timeout;
-  $options{'wait'} = $self->wait if $defined $self->wait;
-  $options{'delete'} = $self->delete if $defined $self->delete;
-  my $msg = $self->queue->pull( 'n' => 1, %options );
-  return ( $msg->reservation_id(), $msg->body() );
+    my ($self) = @_;
+    my %options;
+    $options{'timeout'} = $self->timeout if defined $self->timeout;
+    $options{'wait'}    = $self->wait    if defined $self->wait;
+    $options{'delete'} = $self->delete_after_reserving
+      if defined $self->delete_after_reserving;
+    my $msg = $self->queue->pull( 'n' => 1, %options );
+    return ( $msg->reservation_id(), $msg->body() );
 }
 
 sub remove_msg {
-  my ( $self, $msg ) = @_;
-  $self->queue->delete( 'ids' => [ $msg ] );
+    my ( $self, $msg ) = @_;
+    $self->queue->delete( 'ids' => [$msg] );
+    return;
 }
 
 1;
@@ -183,7 +206,7 @@ sub remove_msg {
           queue_name: msg_queue
           timeout: <seconds>
           wait: <seconds>
-          delete: <boolean>
+          delete_after_reserving: <boolean>
           connection_options:
             project_id: <string>
             token: <string>
