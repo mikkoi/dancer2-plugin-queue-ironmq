@@ -1,7 +1,9 @@
-package Dancer2::Plugin::Queue::IronMQ;
-
+## no critic (Documentation::RequirePodAtEnd)
+## no critic (Documentation::RequirePodSections)
 ## no critic (ControlStructures::ProhibitPostfixControls)
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
+
+package Dancer2::Plugin::Queue::IronMQ;
 
 use strict;
 use warnings;
@@ -9,6 +11,10 @@ use 5.008001;
 
 # ABSTRACT: Dancer2::Plugin::Queue backend using IronMQ
 # VERSION:
+
+=pod
+
+=encoding utf8
 
 =for stopwords UUID_V1 IronMQ JSON config
 
@@ -191,6 +197,8 @@ sub remove_msg {
 
 1;
 
+__END__
+
 =for Pod::Coverage add_msg get_msg remove_msg
 
 =head1 SYNOPSIS
@@ -222,18 +230,19 @@ sub remove_msg {
 
 =head1 DESCRIPTION
 
-This module implements a L<Dancer2::Plugin::Queue> using L<IO::Iron::IronMQ::Client>.
+This module implements a L<Dancer2::Plugin::Queue|Dancer2::Plugin::Queue>
+using L<IO::Iron::IronMQ::Client|IO::Iron::IronMQ::Client>.
 
 =head1 USAGE
 
-See documentation for L<Dancer2::Plugin::Queue>.
+See documentation for L<Dancer2::Plugin::Queue|Dancer2::Plugin::Queue>.
 
 =head1 SEE ALSO
 
 =for :list
-* L<Dancer2::Plugin::Queue>
-* L<IO::Iron>
-* L<IO::Iron::Applications>
+* L<Dancer2::Plugin::Queue|Dancer2::Plugin::Queue>
+* L<IO::Iron|IO::Iron>
+* L<IO::Iron::Applications|IO::Iron::Applications>
 
 =cut
 
