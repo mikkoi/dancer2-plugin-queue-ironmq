@@ -15,19 +15,13 @@ use 5.008001;
 
 =encoding utf8
 
-=for stopwords UUID_V1 IronMQ JSON config
-
-=cut
-
-=for Pod::Coverage UUID_V1
+=for stopwords IronMQ JSON config
 
 =cut
 
 # Dependencies
 use Moose;
-# use MooX::Types::MooseLike::Base qw/Str HashRef/;
 
-use UUID::Tiny qw{ create_uuid_as_string UUID_V1 };
 use IO::Iron::IronMQ::Client 0.12;
 use IO::Iron::IronMQ::Queue 0.12;
 use IO::Iron::IronMQ::Message 0.12;
@@ -175,6 +169,12 @@ using L<IO::Iron::IronMQ::Client|IO::Iron::IronMQ::Client>.
 =head1 USAGE
 
 See documentation for L<Dancer2::Plugin::Queue|Dancer2::Plugin::Queue>.
+
+=head1 NOTES
+
+My thanks to L<https://metacpan.org/author/DAGOLDEN|David Golden> who's
+L<Dancer2::Plugin::Queue::MongoDB|Dancer2::Plugin::Queue::MongoDB> I used
+as an example when building.
 
 =head1 SEE ALSO
 
